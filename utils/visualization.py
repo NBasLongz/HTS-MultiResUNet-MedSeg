@@ -38,7 +38,11 @@ def generate_xai_figure(model, img, h, w, c, save_path="Fig1_XAI.png"):
 
 def generate_error_map(model, img, gt, save_path="Fig3_ErrorMap.png"):
     img_tensor = np.expand_dims(img, 0).astype(np.float32)
-    pred_raw, _, _ = model.predict(img_tensor, verbose=0)
+    preds = model.predict(img_tensor, verbose=0)
+    if isinstance(preds, (list, tuple)):
+        pred_raw = preds[0]
+    else:
+        pred_raw = preds
     
     err = get_error_dist(gt.squeeze(), pred_raw.squeeze())
     fig, ax = plt.subplots(1, 4, figsize=(22, 6))

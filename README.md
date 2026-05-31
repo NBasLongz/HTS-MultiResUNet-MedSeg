@@ -23,23 +23,40 @@ Accurate segmentation of medical images (e.g., polyps, skin lesions, neuronal st
 3. **Edge-Aware Focal Tversky Loss (EA-FTL):** A novel objective function combining Focal Tversky Loss and Sobel-based boundary structural error to address severe class imbalance and morphological degradation at object boundaries.
 
 ##  Datasets
+ 
+ The model has been rigorously evaluated on 4 diverse public medical imaging datasets:
+ - **ISBI-2012:** Neuronal structure segmentation (Electron Microscopy).
+ - **CVC-ClinicDB:** Colonoscopy polyp segmentation.
+ - **ISIC-2018:** Skin lesion segmentation (Dermoscopy).
+ - **ISBI-2009:** Medical image segmentation (Small-scale dataset containing 97 images to evaluate model robustness on limited data).
 
-The model has been rigorously evaluated on 4 diverse public medical imaging datasets:
-- **ISBI-2012:** Neuronal structure segmentation (Electron Microscopy).
-- **CVC-ClinicDB:** Colonoscopy polyp segmentation.
-- **ISIC-2018:** Skin lesion segmentation (Dermoscopy).
-- **ISBI-2009:** Medical image segmentation (Small-scale dataset containing 97 images to evaluate model robustness on limited data).
+### Chuẩn bị dữ liệu (Data Preparation)
 
-##  Repository Structure
+Vui lòng tổ chức dữ liệu của bạn theo cấu trúc thư mục như sau để mã nguồn hoạt động chính xác:
 
-```text
-HTS-MultiResUNet/
-│
-├── data/                       # Directory to store datasets
-│   ├── isbi2012/
-│   ├── cvc_clinicdb/
-│   ├── isic2018/
-│   └── isbi2009/
+1. **ISBI-2012 challenge**: Bộ dữ liệu được lưu dưới dạng file TIFF 3D:
+   - Ảnh gốc: `data/isbi2012/train-volume.tif`
+   - Mask nhãn: `data/isbi2012/train-labels.tif`
+2. **CVC-ClinicDB**: Tổ chức dưới dạng các thư mục ảnh gốc và ground-truth tương ứng:
+   - Thư mục ảnh gốc: `data/cvc_clinicdb/Original/` (chứa các ảnh dạng `1.png`, `2.png`, ...)
+   - Thư mục mask nhãn: `data/cvc_clinicdb/Ground Truth/` (chứa các mask tương ứng `1.png`, `2.png`, ...)
+3. **ISIC-2018**: Tổ chức thư mục ảnh gốc và masks:
+   - Thư mục ảnh gốc: `data/isic2018/ISIC2018_Task1-2_Training_Input/` (chứa các ảnh dạng `ISIC_0000000.jpg`, ...)
+   - Thư mục mask nhãn: `data/isic2018/ISIC2018_Task1_Training_GroundTruth/` (chứa các mask tương ứng `ISIC_0000000_segmentation.png`, ...)
+4. **ISBI-2009**: Tổ chức thư mục ảnh gốc và masks:
+   - Thư mục ảnh gốc: `data/isbi2009/images/` (chứa các ảnh dạng `image_0.png`, ...)
+   - Thư mục mask nhãn: `data/isbi2009/masks/` (chứa các mask tương ứng `mask_0.png`, ...)
+ 
+ ##  Repository Structure
+ 
+ ```text
+ HTS-MultiResUNet/
+ │
+ ├── data/                       # Directory to store datasets
+ │   ├── isbi2012/               # train-volume.tif, train-labels.tif
+ │   ├── cvc_clinicdb/           # Original/, Ground Truth/
+ │   ├── isic2018/               # ISIC2018_Task1-2_Training_Input/, ISIC2018_Task1_Training_GroundTruth/
+ │   └── isbi2009/               # images/, masks/
 │
 ├── models/                     # Model architecture definitions
 │   ├── hts_multiresunet.py     # Proposed architecture
@@ -54,7 +71,6 @@ HTS-MultiResUNet/
 ├── evaluate.py                 # Evaluation & metrics calculation
 ├── requirements.txt            # Python dependencies
 └── README.md
-
 ```
 
 ##  Installation & Setup
@@ -82,36 +98,41 @@ pip install -r requirements.txt
 
 ```
 
-*Core dependencies include: `tensorflow`, `opencv-python`, `numpy`, `matplotlib`, `tqdm`, `scikit-learn`.*
+*Core dependencies include: `tensorflow`, `opencv-python`, `numpy`, `matplotlib`, `tqdm`, `scikit-learn`, `tifffile`.*
 
 ##  Training the Model
-
-To train the model on a specific dataset, use the `train.py` script. The script supports 5-Fold Cross Validation as standard.
-
-```bash
-# Example: Train on ISBI-2009
-python train.py --dataset isbi2009 --epochs 150 --batch_size 4 --lr 1e-3
-
-```
-
-**Key Arguments:**
-
-* `--dataset`: Choose from `[isbi2012, cvc_clinicdb, isic2018, isbi2009]`.
-* `--epochs`: Number of training epochs (Default: 150).
-* `--batch_size`: Batch size (Default: 4).
-* `--loss`: Objective function to use, e.g., `ea-ftl` (Default).
-
-##  Evaluation & Visualization
-
-To evaluate a trained model and generate Interpretability Analysis (Feature Representation) and Boundary Quality Analysis (Edge Error Maps):
-
-```bash
-# Evaluate on ISBI-2012 test set
-python evaluate.py --dataset isbi2012 --weights_path /path/to/hts_fold1.weights.h5 --visualize True
-
-```
-
-*Note: Ensure that the weights are strictly loaded (`scale=False` in BN layers) for perfect architecture matching.*
+ 
+ To train the model on a specific dataset, use the `train.py` script. The script hỗ trợ quy trình 5-Fold Cross Validation thực tế trên dữ liệu thật.
+ 
+ ```bash
+ # Ví dụ: Train trên ISBI-2009 bằng dữ liệu thực tế
+ python train.py --dataset isbi2009 --image_dir ./data/isbi2009/images --mask_dir ./data/isbi2009/masks --epochs 150 --batch_size 4 --lr 1e-3 --save_dir ./results
+ 
+ # Ví dụ: Train trên ISBI-2012 (dùng file TIFF 3D)
+ python train.py --dataset isbi2012 --image_dir ./data/isbi2012/train-volume.tif --mask_dir ./data/isbi2012/train-labels.tif --epochs 150 --batch_size 4 --lr 1e-3 --save_dir ./results
+ ```
+ 
+ **Key Arguments:**
+ 
+ * `--dataset`: Chọn một trong các tập `[isbi2012, cvc_clinicdb, isic2018, isbi2009]`.
+ * `--image_dir`: Đường dẫn đến thư mục chứa ảnh gốc (hoặc file `.tif` đối với ISBI-2012).
+ * `--mask_dir`: Đường dẫn đến thư mục chứa mask nhãn (hoặc file `.tif` đối với ISBI-2012).
+ * `--model_name`: Lựa chọn mô hình `[hts_multiresunet, baseline_multires]` (Mặc định: `hts_multiresunet`).
+ * `--epochs`: Số lượng epochs tối đa (Mặc định: 150).
+ * `--batch_size`: Batch size (Mặc định: 4).
+ * `--lr`: Learning rate ban đầu (Mặc định: 1e-3).
+ * `--save_dir`: Thư mục lưu checkpoint weights và kết quả log (Mặc định: `./results`).
+ 
+ ##  Evaluation & Visualization
+ 
+ Để đánh giá mô hình đã được train và tự động sinh ảnh phân tích giải thích (Grad-CAM XAI) cùng bản đồ lỗi biên biên (Edge Error Maps):
+ 
+ ```bash
+ # Đánh giá mô hình trên tập kiểm tra ISBI-2009 và sinh hình ảnh trực quan
+ python evaluate.py --dataset isbi2009 --image_dir ./data/isbi2009/images --mask_dir ./data/isbi2009/masks --weights_path ./results/hts_multiresunet_isbi2009_fold1.weights.h5 --visualize True --save_dir ./results/visualizations
+ ```
+ 
+ *Note: Khi chạy evaluate với `--visualize True` trên mô hình `hts_multiresunet`, hệ thống sẽ tự động vẽ bản đồ XAI (CNN Features + Attention maps) và lưu kết quả vào thư mục được chỉ định.*
 
 ##  Citation
 
