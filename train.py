@@ -26,7 +26,7 @@ def get_args():
                         choices=['hts_multiresunet', 'baseline_multires'],
                         help="Model architecture selector")
     parser.add_argument('--epochs', type=int, default=150, help="Max number of training epochs")
-    parser.add_argument('--batch_size', type=int, default=4, help="Batch size")
+    parser.add_argument('--batch_size', type=int, default=None, help="Batch size (default: auto-selected to match notebooks)")
     parser.add_argument('--lr', type=float, default=1e-3, help="Initial learning rate")
     parser.add_argument('--n_folds', type=int, default=5, help="Number of folds for Cross-Validation")
     parser.add_argument('--early_stopping', type=int, default=30, help="Patience for early stopping")
@@ -45,19 +45,26 @@ def main():
     
     print(f"\n--- START TRAINING: {args.model_name.upper()} ON {args.dataset.upper()} ---")
     
-    # 1. Image configurations
+    # 1. Image & Batch configurations
     if args.dataset == 'isbi2012':
         H, W, C = 256, 256, 1
         data_color = "Grayscale"
+        default_batch_size = 4
     elif args.dataset == 'cvc_clinicdb':
         H, W, C = 192, 256, 3
         data_color = "RGB"
+        default_batch_size = 8
     elif args.dataset == 'isic2018':
         H, W, C = 192, 256, 3
         data_color = "RGB"
+        default_batch_size = 32
     else: # isbi2009
         H, W, C = 256, 256, 3
         data_color = "RGB"
+        default_batch_size = 8
+
+    batch_size = args.batch_size if args.batch_size is not None else default_batch_size
+    print(f"[INFO] Using batch size: {batch_size}")
         
     # 2. Load dataset
     X, Y = load_dataset(
@@ -129,7 +136,7 @@ def main():
             X_train, Y_train,
             validation_data=(X_val, Y_val),
             epochs=args.epochs,
-            batch_size=args.batch_size,
+            batch_size=batch_size,
             callbacks=[checkpoint, reduce_lr, early_stopping],
             verbose=1
         )
