@@ -9,11 +9,11 @@ This repository contains the official implementation of **HTS-MultiResUNet**, a 
 
 ##  Team Members
 
-| No. | Full Name | Student ID | GitHub |
-| :---: | :--- | :---: | :--- |
-| 1 | Nguyễn Hữu Khánh Duy | 23520375 |  |
-| 2 | Nguyễn Bá Long | 23520880 | [NBasLongz](https://github.com/NBasLongz) |
-| 3 | Hồ Hoàng Quân | 23521252 |  |
+| No. | Full Name | Student ID | 
+| :---: | :--- | :---: |
+| 1 | Nguyễn Hữu Khánh Duy | 23520375 |
+| 2 | Nguyễn Bá Long | 23520880 |
+| 3 | Hồ Hoàng Quân | 23521252 |
 
 ##  Overview
 
