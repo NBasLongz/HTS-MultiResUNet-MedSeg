@@ -24,7 +24,7 @@ def sobel_edges(y):
     edge = tf.sqrt(tf.square(edge_x) + tf.square(edge_y) + K.epsilon())
     return edge
 
-def ea_ftl_loss(y_true, y_pred, lambda_weight=0.5):
+def ea_ftl_loss(y_true, y_pred, lambda_weight=0.1):
     # 1. Region-level loss (FTL)
     ftl = focal_tversky_loss(y_true, y_pred)
     
